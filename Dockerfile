@@ -23,11 +23,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app ./app
 COPY README.md ./
 
-RUN useradd --create-home --uid 10001 appuser \
-    && mkdir -p /app/generated_files \
-    && chown -R appuser:appuser /app
-
-USER appuser
+# generated_files 是宿主机绑定挂载目录，其属主在容器启动时可能被 Docker
+# 重置。保留 root 运行可避免 appuser（UID 10001）无法写入该目录。
+RUN mkdir -p /app/generated_files
 
 EXPOSE 8100
 

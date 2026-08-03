@@ -29,6 +29,15 @@ docker compose up --build -d
 
 服务默认暴露 `8100` 端口。座位图文件保存在宿主机的 `generated_files`，容器重建后仍可下载。
 
+若旧镜像启动后出现 `Permission denied: 'generated_files/plans'`，先执行一次：
+
+```powershell
+docker compose down
+docker compose up --build -d
+```
+
+新镜像会以可写身份运行，兼容宿主机绑定的 `generated_files` 目录。
+
 若 MCP 客户端通过局域网或公网地址访问，必须将该地址（含端口）同时加入 `.env` 的 `MCP_ALLOWED_HOSTS` 与 `MCP_ALLOWED_ORIGINS`，然后重建或重启容器。例如访问地址为 `http://168.8.6.168:8100/sse` 时，应允许 `168.8.6.168:8100` 和 `http://168.8.6.168:8100`。
 
 ## 排位类型
