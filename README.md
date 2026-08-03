@@ -17,6 +17,8 @@ python -m app.mcp_sse_server
 默认 MCP SSE 地址为 `http://127.0.0.1:8100/sse`。生成文件可通过工具返回的下载地址获取。
 `cairosvg` 用于 PNG/PDF 导出；若运行环境缺少其系统图形依赖，工具仍会成功返回 SVG，并在 `warnings` 中说明附加格式未生成。
 
+人员数据源支持与 `llm2word` 完全一致的分项配置：`PERSONNEL_DB_TYPE`、`PERSONNEL_DB_HOST`、`PERSONNEL_DB_PORT`、`PERSONNEL_DB_USER`、`PERSONNEL_DB_PASSWORD`、`PERSONNEL_DB_SERVICE_NAME`、`PERSONNEL_DB_SCHEMA` 与 `PERSONNEL_DB_VIEW`。也可用 `PERSONNEL_DATABASE_URL` 覆盖分项配置。
+
 ## Docker 部署
 
 ```powershell

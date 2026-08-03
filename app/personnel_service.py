@@ -30,12 +30,55 @@ def _keywords(values: list[str] | None, field: str) -> list[str]:
     return list(dict.fromkeys(item.strip() for item in values if isinstance(item, str) and item.strip()))
 
 
+def _database_url_from_env() -> str:
+    """Build the same SQLAlchemy URLs supported by llm2word's personnel service."""
+    database_type = os.getenv("PERSONNEL_DB_TYPE", "").strip().lower()
+    host = os.getenv("PERSONNEL_DB_HOST", "").strip()
+    port_text = os.getenv("PERSONNEL_DB_PORT", "").strip()
+    username = os.getenv("PERSONNEL_DB_USER", "").strip()
+    password = os.getenv("PERSONNEL_DB_PASSWORD", "")
+    database = os.getenv("PERSONNEL_DB_NAME", "").strip()
+    service_name = os.getenv("PERSONNEL_DB_SERVICE_NAME", database).strip()
+    missing = [name for name, value in {
+        "PERSONNEL_DB_TYPE": database_type, "PERSONNEL_DB_HOST": host,
+        "PERSONNEL_DB_PORT": port_text, "PERSONNEL_DB_USER": username,
+        "PERSONNEL_DB_PASSWORD": password,
+    }.items() if not value]
+    if missing:
+        raise PersonnelConfigurationError("未配置 PERSONNEL_DATABASE_URL，且缺少分项配置：" + "、".join(missing))
+    try:
+        port = int(port_text)
+    except ValueError as exc:
+        raise PersonnelConfigurationError("PERSONNEL_DB_PORT 必须是整数") from exc
+    try:
+        from sqlalchemy.engine import URL
+    except ImportError as exc:
+        raise PersonnelConfigurationError("未安装 SQLAlchemy") from exc
+    if database_type in {"oracle", "oracle+oracledb"}:
+        if not service_name:
+            raise PersonnelConfigurationError("Oracle 连接还需要 PERSONNEL_DB_SERVICE_NAME")
+        url = URL.create("oracle+oracledb", username=username, password=password, host=host, port=port, query={"service_name": service_name})
+    elif database_type in {"postgres", "postgresql", "postgresql+psycopg"}:
+        if not database:
+            raise PersonnelConfigurationError("PostgreSQL 连接还需要 PERSONNEL_DB_NAME")
+        url = URL.create("postgresql+psycopg", username=username, password=password, host=host, port=port, database=database)
+    elif database_type in {"mysql", "mysql+pymysql"}:
+        if not database:
+            raise PersonnelConfigurationError("MySQL 连接还需要 PERSONNEL_DB_NAME")
+        url = URL.create("mysql+pymysql", username=username, password=password, host=host, port=port, database=database, query={"charset": "utf8mb4"})
+    else:
+        raise PersonnelConfigurationError("PERSONNEL_DB_TYPE 当前支持 oracle、postgresql、mysql")
+    return url.render_as_string(hide_password=False)
+
+
 def query_personnel(*, name_keywords: list[str], department_keywords: list[str], organization_keywords: list[str], administrative_title_keywords: list[str], professional_title_keywords: list[str], exclude_keywords: list[str], include_all: bool, limit: int) -> dict[str, Any]:
     if not 1 <= limit <= 500:
         raise ValueError("limit 必须在 1 到 500 之间")
     url, view = os.getenv("PERSONNEL_DATABASE_URL", "").strip(), os.getenv("PERSONNEL_DB_VIEW", "").strip()
-    if not url or not view:
-        raise PersonnelConfigurationError("未配置 PERSONNEL_DATABASE_URL 或 PERSONNEL_DB_VIEW")
+    if not url:
+        url = _database_url_from_env()
+    if not view:
+        raise PersonnelConfigurationError("未配置 PERSONNEL_DB_VIEW")
     schema = os.getenv("PERSONNEL_DB_SCHEMA", "").strip()
     if schema and not _IDENTIFIER.fullmatch(schema):
         raise PersonnelConfigurationError("PERSONNEL_DB_SCHEMA 不是合法的数据库标识符")
