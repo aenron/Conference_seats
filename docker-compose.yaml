@@ -1,0 +1,13 @@
+services:
+  conference-seats:
+    build:
+      context: .
+    image: conference-seats:local
+    container_name: conference-seats
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${MCP_PORT:-8100}:8100"
+    volumes:
+      - ./generated_files:/app/generated_files

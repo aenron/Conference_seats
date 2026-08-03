@@ -1,0 +1,1 @@
+"""Conference seating MCP service."""
