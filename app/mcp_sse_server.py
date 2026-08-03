@@ -15,7 +15,32 @@ from app.seating_service import GENERATED_DIR, create_plan, load_plan
 from app.svg_renderer import render_svg
 
 
-mcp = FastMCP("conference-seats-mcp")
+try:
+    from mcp.server.transport_security import TransportSecuritySettings
+except ModuleNotFoundError:  # Compatibility with older MCP releases.
+    TransportSecuritySettings = None
+
+
+def _csv_env(name: str, default: list[str]) -> list[str]:
+    value = os.getenv(name, "").strip()
+    return [item.strip() for item in value.split(",") if item.strip()] if value else default
+
+
+# FastMCP 默认只信任本机 Host。外部部署时通过 .env 明确允许实际服务地址，
+# 防止为了连通性而关闭 DNS 重绑定防护。
+ALLOWED_HOSTS = _csv_env("MCP_ALLOWED_HOSTS", ["127.0.0.1:8100", "localhost:8100"])
+ALLOWED_ORIGINS = _csv_env("MCP_ALLOWED_ORIGINS", ["http://127.0.0.1:8100", "http://localhost:8100"])
+transport_security = (
+    TransportSecuritySettings(
+        enable_dns_rebinding_protection=True,
+        allowed_hosts=ALLOWED_HOSTS,
+        allowed_origins=ALLOWED_ORIGINS,
+    )
+    if TransportSecuritySettings is not None
+    else None
+)
+
+mcp = FastMCP("conference-seats-mcp", transport_security=transport_security)
 BASE_URL = os.getenv("MCP_DOWNLOAD_BASE_URL", "http://127.0.0.1:8100").rstrip("/")
 
 
