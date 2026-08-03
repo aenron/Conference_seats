@@ -38,6 +38,8 @@ docker compose up --build -d
 
 新镜像会以可写身份运行，兼容宿主机绑定的 `generated_files` 目录。
 
+镜像内置并缓存 `Noto Sans CJK SC` 中文字体，PNG/PDF 导出前请使用 `docker compose up --build -d` 重建镜像；仅重启旧容器不会加入字体。
+
 若 MCP 客户端通过局域网或公网地址访问，必须将该地址（含端口）同时加入 `.env` 的 `MCP_ALLOWED_HOSTS` 与 `MCP_ALLOWED_ORIGINS`，然后重建或重启容器。例如访问地址为 `http://168.8.6.168:8100/sse` 时，应允许 `168.8.6.168:8100` 和 `http://168.8.6.168:8100`。
 
 ## 排位类型

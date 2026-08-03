@@ -35,7 +35,9 @@ def _positions(plan: SeatingPlan) -> dict[str, tuple[int, int]]:
 def render_svg(plan: SeatingPlan, options: RenderOptions, output: Path) -> None:
     width, height = (1123, 794) if options.paper == "A4-landscape" else (794, 1123)
     positions = _positions(plan)
-    parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 1123 794">', '<rect width="1123" height="794" fill="#ffffff"/>', '<style>text{font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#17212b}.title{font-size:28px;font-weight:700}.seat{font-size:15px}.sub{font-size:12px;fill:#526170}</style>', f'<text class="title" x="561" y="48" text-anchor="middle">{escape(plan.meeting_title)}</text>']
+    # Noto Sans CJK SC is installed in the Docker image.  Put it first because
+    # CairoSVG/Pango cannot use Windows-only Microsoft YaHei when exporting PNG/PDF.
+    parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 1123 794">', '<rect width="1123" height="794" fill="#ffffff"/>', '<style>text{font-family:"Noto Sans CJK SC","Noto Sans CJK",sans-serif;fill:#17212b}.title{font-size:28px;font-weight:700}.seat{font-size:15px}.sub{font-size:12px;fill:#526170}</style>', f'<text class="title" x="561" y="48" text-anchor="middle">{escape(plan.meeting_title)}</text>']
     if plan.layout_type == "surrounding_table": parts.append('<rect x="180" y="190" width="740" height="350" rx="12" fill="#edf2f5" stroke="#506270" stroke-width="3"/><text x="550" y="370" text-anchor="middle" font-size="24">会议桌</text>')
     elif plan.layout_type == "face_to_face": parts.append('<rect x="100" y="320" width="900" height="90" rx="12" fill="#edf2f5" stroke="#506270" stroke-width="3"/><text x="550" y="375" text-anchor="middle" font-size="22">会议桌</text>')
     else: parts.append('<rect x="170" y="100" width="100" height="570" rx="10" fill="#edf2f5" stroke="#506270" stroke-width="3"/><text x="220" y="400" text-anchor="middle" transform="rotate(-90 220 400)" font-size="20">主桌</text>')
