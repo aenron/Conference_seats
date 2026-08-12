@@ -19,6 +19,8 @@ python -m app.mcp_sse_server
 
 人员数据源支持与 `llm2word` 完全一致的分项配置：`PERSONNEL_DB_TYPE`、`PERSONNEL_DB_HOST`、`PERSONNEL_DB_PORT`、`PERSONNEL_DB_USER`、`PERSONNEL_DB_PASSWORD`、`PERSONNEL_DB_SERVICE_NAME`、`PERSONNEL_DB_SCHEMA` 与 `PERSONNEL_DB_VIEW`。也可用 `PERSONNEL_DATABASE_URL` 覆盖分项配置。
 
+为保护个人信息，`query_personnel_candidates` 的 `candidates` 仅返回 `name`、`department`、`organization`、`professional_title` 和 `administrative_title`。
+
 ## Docker 部署
 
 ```powershell

@@ -16,6 +16,15 @@ class PersonnelQueryError(RuntimeError):
 
 _IDENTIFIER = re.compile(r"^[A-Za-z_][A-Za-z0-9_$#]*$")
 
+# MCP 对外人员明细仅包含会议排位所需字段，不返回工号、岗位等级等信息。
+PUBLIC_CANDIDATE_FIELDS = (
+    "name",
+    "department",
+    "organization",
+    "professional_title",
+    "administrative_title",
+)
+
 
 def _column(name: str, default: str) -> str:
     value = os.getenv(name, default).strip()
@@ -86,10 +95,10 @@ def query_personnel(*, name_keywords: list[str], department_keywords: list[str],
         raise PersonnelConfigurationError("PERSONNEL_DB_VIEW 不是合法的数据库标识符")
 
     cols = {key: _column(env, default) for key, env, default in [
-        ("employee_id", "PERSONNEL_COL_EMPLOYEE_ID", "GH"), ("name", "PERSONNEL_COL_NAME", "XM"),
+        ("name", "PERSONNEL_COL_NAME", "XM"),
         ("department", "PERSONNEL_COL_DEPARTMENT", "SZBM"), ("organization", "PERSONNEL_COL_ORGANIZATION", "SZDW"),
         ("professional_title", "PERSONNEL_COL_PROFESSIONAL_TITLE", "PRZYJSZW"),
-        ("post_level", "PERSONNEL_COL_POST_LEVEL", "PRGLGWDJ"), ("administrative_title", "PERSONNEL_COL_ADMINISTRATIVE_TITLE", "XZZWMC"),
+        ("administrative_title", "PERSONNEL_COL_ADMINISTRATIVE_TITLE", "XZZWMC"),
     ]}
     filters = [("name", _keywords(name_keywords, "name_keywords")), ("department", _keywords(department_keywords, "department_keywords")), ("organization", _keywords(organization_keywords, "organization_keywords")), ("administrative_title", _keywords(administrative_title_keywords, "administrative_title_keywords")), ("professional_title", _keywords(professional_title_keywords, "professional_title_keywords"))]
     excluded = _keywords(exclude_keywords, "exclude_keywords")
@@ -123,5 +132,11 @@ def query_personnel(*, name_keywords: list[str], department_keywords: list[str],
     except Exception as exc:
         raise PersonnelQueryError("人员视图查询失败，请检查数据库连接、视图和字段映射") from exc
     candidates, truncated = rows[:limit], len(rows) > limit
+    # Defensive allowlist: even if a future query adds internal columns, they
+    # cannot reach MCP callers.
+    candidates = [
+        {field: candidate.get(field) for field in PUBLIC_CANDIDATE_FIELDS}
+        for candidate in candidates
+    ]
     attendees = list(dict.fromkeys(str(row.get("name") or "").strip() for row in candidates if row.get("name")))
     return {"attendees": attendees, "candidates": candidates, "returned_count": len(candidates), "unique_attendee_count": len(attendees), "truncated": truncated}

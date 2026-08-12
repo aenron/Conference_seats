@@ -44,7 +44,7 @@ mcp = FastMCP("conference-seats-mcp", transport_security=transport_security)
 BASE_URL = os.getenv("MCP_DOWNLOAD_BASE_URL", "http://127.0.0.1:8100").rstrip("/")
 
 
-@mcp.tool(name="query_personnel_candidates", description="根据姓名、部门、单位、行政职务或专业技术职务查询参会人员候选名单。返回 candidates 明细和可用于排位的 attendees。所有数组字段传 [] 而不能传 null。")
+@mcp.tool(name="query_personnel_candidates", description="根据姓名、部门、单位、行政职务或专业技术职务查询参会人员候选名单。candidates 仅返回 name、department、organization、professional_title、administrative_title 五项会议排位所需信息；不返回工号、岗位等级等个人信息。所有数组字段传 [] 而不能传 null。")
 def query_personnel_candidates(name_keywords: list[str] = [], department_keywords: list[str] = [], organization_keywords: list[str] = [], administrative_title_keywords: list[str] = [], professional_title_keywords: list[str] = [], exclude_keywords: list[str] = [], include_all: bool = False, limit: int = 100) -> dict[str, Any]:
     try:
         data = query_personnel(name_keywords=name_keywords, department_keywords=department_keywords, organization_keywords=organization_keywords, administrative_title_keywords=administrative_title_keywords, professional_title_keywords=professional_title_keywords, exclude_keywords=exclude_keywords, include_all=include_all, limit=limit)
