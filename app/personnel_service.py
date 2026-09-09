@@ -16,12 +16,13 @@ class PersonnelQueryError(RuntimeError):
 
 _IDENTIFIER = re.compile(r"^[A-Za-z_][A-Za-z0-9_$#]*$")
 
-# MCP 对外人员明细仅包含会议排位所需字段，不返回工号、岗位等级等信息。
+# MCP 对外人员明细仅包含会议排位所需字段，不返回工号等信息。
 PUBLIC_CANDIDATE_FIELDS = (
     "name",
     "department",
     "organization",
     "professional_title",
+    "management_post_level",
     "administrative_title",
 )
 
@@ -32,6 +33,10 @@ PERSONNEL_VIEW_FIELD_DEFAULTS = {
     "department": ("PERSONNEL_COL_DEPARTMENT", "SZBM"),
     "organization": ("PERSONNEL_COL_ORGANIZATION", "SZDW"),
     "professional_title": ("PERSONNEL_COL_PROFESSIONAL_TITLE", "PRZYJSZW"),
+    "management_post_level": (
+        "PERSONNEL_COL_MANAGEMENT_POST_LEVEL",
+        "PRGLGWDJ",
+    ),
     "administrative_title": ("PERSONNEL_COL_ADMINISTRATIVE_TITLE", "LDZWMC"),
 }
 

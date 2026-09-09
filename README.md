@@ -19,7 +19,7 @@ python -m app.mcp_sse_server
 
 人员数据源支持与 `llm2word` 完全一致的分项配置：`PERSONNEL_DB_TYPE`、`PERSONNEL_DB_HOST`、`PERSONNEL_DB_PORT`、`PERSONNEL_DB_USER`、`PERSONNEL_DB_PASSWORD`、`PERSONNEL_DB_SERVICE_NAME`、`PERSONNEL_DB_SCHEMA` 与 `PERSONNEL_DB_VIEW`。也可用 `PERSONNEL_DATABASE_URL` 覆盖分项配置。
 
-为保护个人信息，`query_personnel_candidates` 的 `candidates` 仅返回 `name`、`department`、`organization`、`professional_title` 和 `administrative_title`。
+为保护个人信息，`query_personnel_candidates` 的 `candidates` 仅返回 `name`、`department`、`organization`、`professional_title`、`management_post_level`（聘任管理岗位等级）和 `administrative_title`。
 
 ## Docker 部署
 
@@ -56,4 +56,4 @@ docker compose up --build -d
 
 ## 新人员视图字段映射
 
-默认适配 `V_ZK_ZGXX` 新视图：`XM`（姓名）、`SZBM`（部门）、`SZDW`（单位）、`PRZYJSZW`（聘任专业技术职务）和 `LDZWMC`（领导/行政职务名称）。筛选“副所长”等行政职务时匹配 `LDZWMC`，筛选“研究员”等专业技术职务时匹配 `PRZYJSZW`。
+默认适配 `V_ZK_ZGXX` 新视图：`XM`（姓名）、`SZBM`（部门）、`SZDW`（单位）、`PRZYJSZW`（聘任专业技术职务）、`PRGLGWDJ`（聘任管理岗位等级）和 `LDZWMC`（领导/行政职务名称）。筛选“副所长”等行政职务时匹配 `LDZWMC`，筛选“研究员”等专业技术职务时匹配 `PRZYJSZW`。
