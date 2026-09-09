@@ -53,3 +53,7 @@ docker compose up --build -d
 `create_seating_plan` 的 `adjustments` 支持 `assign`、`swap`、`reserve` 与 `clear`。工具会返回 `warnings`，用于提示座位不足、人员未排入、重复安排或不存在的人员。
 
 人员数据源配置与 `llm2word` 保持兼容；未配置数据库时，人员查询会返回明确的配置错误，但不影响根据手工名单排位和出图。
+
+## 新人员视图字段映射
+
+默认适配 `V_ZK_ZGXX` 新视图：`XM`（姓名）、`SZBM`（部门）、`SZDW`（单位）、`PRZYJSZW`（聘任专业技术职务）和 `LDZWMC`（领导/行政职务名称）。筛选“副所长”等行政职务时匹配 `LDZWMC`，筛选“研究员”等专业技术职务时匹配 `PRZYJSZW`。

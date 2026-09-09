@@ -25,6 +25,16 @@ PUBLIC_CANDIDATE_FIELDS = (
     "administrative_title",
 )
 
+# V_ZK_ZGXX 新版视图默认字段映射。领导职务已由旧版 XZZWMC
+# 调整为 LDZWMC；专业技术职务仍使用 PRZYJSZW。
+PERSONNEL_VIEW_FIELD_DEFAULTS = {
+    "name": ("PERSONNEL_COL_NAME", "XM"),
+    "department": ("PERSONNEL_COL_DEPARTMENT", "SZBM"),
+    "organization": ("PERSONNEL_COL_ORGANIZATION", "SZDW"),
+    "professional_title": ("PERSONNEL_COL_PROFESSIONAL_TITLE", "PRZYJSZW"),
+    "administrative_title": ("PERSONNEL_COL_ADMINISTRATIVE_TITLE", "LDZWMC"),
+}
+
 
 def _column(name: str, default: str) -> str:
     value = os.getenv(name, default).strip()
@@ -94,12 +104,10 @@ def query_personnel(*, name_keywords: list[str], department_keywords: list[str],
     if not _IDENTIFIER.fullmatch(view):
         raise PersonnelConfigurationError("PERSONNEL_DB_VIEW 不是合法的数据库标识符")
 
-    cols = {key: _column(env, default) for key, env, default in [
-        ("name", "PERSONNEL_COL_NAME", "XM"),
-        ("department", "PERSONNEL_COL_DEPARTMENT", "SZBM"), ("organization", "PERSONNEL_COL_ORGANIZATION", "SZDW"),
-        ("professional_title", "PERSONNEL_COL_PROFESSIONAL_TITLE", "PRZYJSZW"),
-        ("administrative_title", "PERSONNEL_COL_ADMINISTRATIVE_TITLE", "XZZWMC"),
-    ]}
+    cols = {
+        key: _column(env_name, default)
+        for key, (env_name, default) in PERSONNEL_VIEW_FIELD_DEFAULTS.items()
+    }
     filters = [("name", _keywords(name_keywords, "name_keywords")), ("department", _keywords(department_keywords, "department_keywords")), ("organization", _keywords(organization_keywords, "organization_keywords")), ("administrative_title", _keywords(administrative_title_keywords, "administrative_title_keywords")), ("professional_title", _keywords(professional_title_keywords, "professional_title_keywords"))]
     excluded = _keywords(exclude_keywords, "exclude_keywords")
     if not include_all and not any(words for _, words in filters):
